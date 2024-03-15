@@ -51,7 +51,7 @@ app.post("/api", (req, res) => {
     jsonData[key] = value
     HashmaptData(jsonData, db)
     console.log(`Storing data with key '${key}' on server '${db}'`);
-    res.send("Deleted item successfuly")
+    res.send("Added item successfuly")
 })
 
 app.delete("/api/:key", (req, res) => {
@@ -61,7 +61,7 @@ app.delete("/api/:key", (req, res) => {
     delete jsonData[key]
     HashmaptData(jsonData, db)
     console.log(`Deleting data with key '${key}' on server '${db}'`);
-    res.send("delete endpoint called")
+    res.send("Deleted item successfuly")
 })
 
 
