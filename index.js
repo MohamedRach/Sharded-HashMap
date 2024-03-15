@@ -7,9 +7,12 @@ const PORT = 3000;
 
 app.use(express.json())
 
+// number of database servers
 const M = 3; 
 const databaseServers = Array.from({ length: M }, (_, i) => `./db/db${i+1}.json`);
 
+
+// utils functions
 const getShard = (key) => {
     const hash = crypto.createHash('sha1');
     hash.update(key);
@@ -17,6 +20,19 @@ const getShard = (key) => {
     const serverIndex = keyHash % M;
     return databaseServers[serverIndex];
 }
+const HashmaptData = (data, db) => {
+    const stringifyData = JSON.stringify(data)
+    fs.writeFileSync(db, stringifyData)
+}
+const getSingleHashMapData = (key, db) => {
+    const jsonData = fs.readFileSync(db)
+    if(!jsonData){
+        return {error: "data not found"}
+    }
+    return {value: JSON.parse(jsonData)[key]}   
+}
+
+// Routes
 app.get("/api/:key", (req, res) => {
     const key = req.params.key;
     const db = getShard(key);
@@ -27,12 +43,15 @@ app.get("/api/:key", (req, res) => {
 
 app.post("/api", (req, res) => {
     const { key, value } = req.body;
+    if (!key || !value){
+        res.json({error: "invalid input"})
+    }
     const db = getShard(key);
     const jsonData = JSON.parse(fs.readFileSync(db))
     jsonData[key] = value
     HashmaptData(jsonData, db)
     console.log(`Storing data with key '${key}' on server '${db}'`);
-    res.send("added successfuly")
+    res.send("Deleted item successfuly")
 })
 
 app.delete("/api/:key", (req, res) => {
@@ -45,18 +64,11 @@ app.delete("/api/:key", (req, res) => {
     res.send("delete endpoint called")
 })
 
-const HashmaptData = (data, db) => {
-    const stringifyData = JSON.stringify(data)
-    fs.writeFileSync(db, stringifyData)
-}
-const getSingleHashMapData = (key, db) => {
-    const jsonData = fs.readFileSync(db)
-    return {value: JSON.parse(jsonData)[key]}   
-}
 
+// start the server
 app.listen(PORT, (error) =>{ 
     if(!error) 
-        console.log("Server is Successfully Running,and App is listening on port "+ PORT) 
+        console.log("App is listening on port "+ PORT) 
     else 
         console.log("Error occurred, server can't start", error); 
     } 
